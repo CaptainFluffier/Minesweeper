@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<title>Mines</title>
+<head>
+<link rel="stylesheet" type="text/css" href="min.css">
+<script src="http://osebje.famnit.upr.si/~domen.soberl/minefield.js"></script>
+<script>
+var GAMESTART = true;
+var GAMEOVER = false;
+var WIN = false;
+var TIMESTART = true;
+var i=600;
+var mines=10;
+var flags=0;
+var timerRef = 0;
+
+function reveal(){
+var table = document.getElementById("tab");
+for(var i=0; i<minefield.height; i++){
+	for(var j=0; j<minefield.width;j++){
+		minefield.unveil(i,j);
+	}
+}
+for(var i=0; i<minefield.height; i++){
+	for(var j=0; j<minefield.width;j++){
+		if(minefield.symbol(i,j) == 'x')
+			table.rows[i].cells[j].innerHTML="<img src='http://www.sireasgallery.com/iconset/minesweeper/Mine_256x256_32.png' width='16' height='16'>";
+		else
+			table.rows[i].cells[j].innerHTML=minefield.symbol(i,j);
+		table.rows[i].cells[j].className="check";
+	}
+}
+}
+
+function timerStart()
+{
+	timerRef = window.setInterval("DecTimer()", 1000);
+}
+
+function timerStop()
+{
+	window.clearInterval(timerRef);
+}
+
+function DecTimer()
+{
+	i--;
+	if(i==0){
+		GAMEOVER = true;
+		alert("You're out of time, you lose");
+		timerStop();
+		reveal();
+	}
+	var tmp = Math.floor(i/60);
+	var tmp1 = i % 60
+	if(i>60)
+		document.getElementById("timer").innerHTML = tmp + " min " + tmp1 +  " sec"; 
+	else
+		document.getElementById("timer").innerHTML = i + " sec";
+}
+
+
+function newGame(){
+WIN = false;
+timerStop();
+flags=0;
+i=600;
+GAMEOVER = false;
+TIMESTART = true;
+var novo = document.getElementById("level").value;
+	if (novo == "med"){
+		minefield =  new Minefield(20, 20, 60);
+		mines = 60;
+	}
+	else if (novo == "adv"){
+		minefield =  new Minefield(30, 30, 180);
+		mines = 180;
+	}
+	else{
+		minefield =  new Minefield(10, 10, 10);
+		mines= 10;
+	}
+document.getElementById("output").innerHTML = flags + " / " + mines + '<img src="http://www.sireasgallery.com/iconset/minesweeper/Flag_256x256_32.png" width="16" height="16">';
+	if(GAMESTART != true){
+		clear();
+	}
+start();
+GAMESTART = false;
+document.getElementById("timer").innerHTML = "10 min";
+}
+function clear(){
+var table = document.getElementById("tab");
+	for(var i = table.rows.length - 1; i >= 0; i--)
+	{
+		table.deleteRow(i);
+	}
+}
+function click(event){
+	if(event.button == 0)
+		return 0;
+	if(event.button == 2)
+		return 2;
+	return -1;
+}
+function univeil(x,y){
+var table = document.getElementById("tab");
+minefield.unveil(x,y);
+	if(minefield.symbol(x,y) == 'x'){
+		GAMEOVER = true;
+		table.rows[x].cells[y].innerHTML="<img src='http://www.sireasgallery.com/iconset/minesweeper/Mine_256x256_32.png' width='16' height='16'>";
+		alert("BOOM, GAME OVER");
+		timerStop();
+		reveal();
+	}
+	for(var i=0; i<minefield.height; i++){
+		for(var j=0; j<minefield.width;j++){
+			if(minefield.symbol(i,j)!="." && minefield.symbol(i,j)!="x"	)
+			{
+				if(table.rows[i].cells[j].innerHTML == '<img src="http://www.sireasgallery.com/iconset/minesweeper/Flag_256x256_32.png" width="16" height="16">')
+				flags--;
+				table.rows[i].cells[j].innerHTML=minefield.symbol(i,j);
+				table.rows[i].cells[j].className="check";
+			}
+		}
+	}
+document.getElementById("output").innerHTML = flags + " / " + mines + '<img src="http://www.sireasgallery.com/iconset/minesweeper/Flag_256x256_32.png" width="16" height="16">';
+	if(!GAMEOVER){
+		var novo = document.getElementById("level").value;
+		if (novo == "med")
+			var remaining = minefield.veiled + minefield.explosions - mines;
+		else if (novo == "adv")
+			var remaining = minefield.veiled + minefield.explosions - mines;
+		else
+			var remaining = minefield.veiled + minefield.explosions - mines;
+		if(remaining == 0){
+			timerStop();
+			alert("YOU WIN, Congratulations");
+			GAMEOVER = true;
+			WIN = true;
+		}
+	}
+}
+function hit(cell){
+if(TIMESTART == true){
+TIMESTART = false;
+timerStart();
+}
+var table = document.getElementById("tab");
+var flaggies = document.getElementById("output");
+var x = cell.parentNode.rowIndex;
+var y = cell.cellIndex;
+	if(click(event)==0 
+	&& table.rows[x].cells[y].innerHTML != '<img src="http://www.sireasgallery.com/iconset/minesweeper/Flag_256x256_32.png" width="16" height="16">'
+	&& table.rows[x].cells[y].innerHTML != '<img src="https://i.dlpng.com/static/png/1542946_thumb.png" width="16" height="16">')
+	{
+		univeil(x, y);
+	}
+	if(click(event)==2 && minefield.symbol(x,y)=="."){
+		if(table.rows[x].cells[y].innerHTML == '<img src="http://www.sireasgallery.com/iconset/minesweeper/Flag_256x256_32.png" width="16" height="16">'){
+			table.rows[x].cells[y].innerHTML="<img src='https://i.dlpng.com/static/png/1542946_thumb.png' width='16' height='16'>";
+			flags--;
+		}
+			
+		else if (table.rows[x].cells[y].innerHTML == '<img src="https://i.dlpng.com/static/png/1542946_thumb.png" width="16" height="16">'){
+			table.rows[x].cells[y].innerHTML="";
+		}
+			
+		else if (flags != mines) {
+			table.rows[x].cells[y].innerHTML = '<img src="http://www.sireasgallery.com/iconset/minesweeper/Flag_256x256_32.png" width="16" height="16">'
+			flags++;
+		} 
+			flaggies.innerHTML = flags + " / " + mines + '<img src="http://www.sireasgallery.com/iconset/minesweeper/Flag_256x256_32.png" width="16" height="16">';
+  
+	}
+}
+function start(){
+var table = document.getElementById("tab");
+for(var i=0; i<minefield.height; i++){
+	var row = table.insertRow(i);
+	for(var j=0; j<minefield.width;j++){
+		var cell = row.insertCell(j);
+			cell.innerHTML = "";
+			cell.onmousedown =function(){
+				if(GAMEOVER == true){
+					if(WIN == true)
+						alert("ZMAGALI STE, Začnite novo igro z gumbom 'new'");
+					else
+						alert("GAME OVER, Začnite novo igro z gumbom 'new'");
+				}
+				else
+				hit(this);
+			};
+	}
+}
+}
+</script>
+</head>
+<body>
+<div id="st">Matic Mihelj FAMNIT - RIN1,  05.2019</div>
+<div>
+<table id="tab" oncontextmenu="return false;"> </table>
+<div id="timer">10 min</div>
+</div>
+<pre id="output"></pre>
+<p>
+<select id="level">
+	<option value="easy">Easy</option>
+	<option value="med">Intermediate</option>
+	<option value="adv">Advanced</option>
+</select>
+<input type="button" value="New" onclick="newGame()">
+</p>
+
+<script>
+newGame();
+</script>
+</body>
+</html>

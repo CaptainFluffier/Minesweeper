@@ -1,0 +1,34 @@
+body{
+	background: black;
+}
+tr td{
+  border:1px solid white;
+  background: Gray;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+}
+tr td.check {
+    background: black;
+	color: white;
+}
+td img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+#timer{
+	width: 150px;
+	font-size: 50px;
+	text-align: center;
+	color: red;
+	margin: 0;
+}
+#output{
+	color:red;
+}
+#st{
+	color:red;
+	float: right
+}
